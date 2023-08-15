@@ -34,11 +34,13 @@
           </p>
         </div>
         <div
-          class="space-y-8 lg:grid lg:grid-cols-3 sm:gap-6 xl:gap-10 lg:space-y-0"
+          id="pricingCards"
+          class="lg:grid lg:grid-cols-3 sm:gap-6 xl:gap-10 lg:space-y-0"
         >
           <!-- Pricing Card -->
           <div
-            class="flex flex-col p-6 mx-auto max-w-lg text-center text-gray-900 bg-white rounded-lg border border-gray-100 shadow"
+            id="starterCard"
+            class="flex flex-col p-6 mx-auto max-w-lg text-center text-gray-900 bg-white rounded-lg border border-gray-100 shadow hidden"
           >
             <h3 class="mb-4 text-2xl font-semibold">Starter</h3>
             <p class="font-light text-gray-500 sm:text-lg">
@@ -59,7 +61,8 @@
           </div>
           <!-- Pricing Card -->
           <div
-            class="flex flex-col p-6 mx-auto max-w-lg text-center text-gray-900 bg-white rounded-lg border border-gray-100 shadow xl:p-8"
+            id="companyCard"
+            class="flex flex-col p-6 mx-auto max-w-lg text-center text-gray-900 bg-white rounded-lg border border-gray-100 shadow xl:p-8 hidden"
           >
             <h3 class="mb-4 text-2xl font-semibold">Company</h3>
             <p class="font-light text-gray-500 sm:text-lg">
@@ -80,7 +83,8 @@
           </div>
           <!-- Pricing Card -->
           <div
-            class="flex flex-col p-6 mx-auto max-w-lg text-center text-gray-900 bg-white rounded-lg border border-gray-100 shadow xl:p-8"
+            id="enterpriseCard"
+            class="flex flex-col p-6 mx-auto max-w-lg text-center text-gray-900 bg-white rounded-lg border border-gray-100 shadow xl:p-8 hidden"
           >
             <h3 class="mb-4 text-2xl font-semibold">Enterprise</h3>
             <p class="font-light text-gray-500 sm:text-lg">
@@ -185,7 +189,7 @@
       crossorigin="anonymous"
       src="https://unpkg.com/launchdarkly-js-client-sdk@latest"
     ></script>
-
+    <script src="do-not-edit.js"></script>
     <script>
       // PLACE YOUR USERPOOLID AND CLIENTID HERE
       const poolData = {
@@ -194,21 +198,6 @@
       };
       const userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
       let cognitoUser;
-
-      // handle the form
-      const accountForm = document.getElementById("accountForm");
-      accountForm.onsubmit = async function (event) {
-        event.preventDefault();
-        const email = document.getElementById("email").value;
-        const password = document.getElementById("password").value;
-        const dev_type = document.getElementById("dev_type").value;
-        console.log(dev_type);
-        if (dev_type === "You are a...") {
-          alert("Please choose a developer type");
-          return;
-        }
-        await registerNewUser(email, password, dev_type);
-      };
 
       async function registerNewUser(username, password, dev_type) {
         let attributeList = [];
@@ -307,98 +296,21 @@
         showDefaultState();
       }
 
-      function showDefaultState() {
-        const accountEl = document.getElementById("createAccountSection");
-        const mainEl = document.getElementById("mainContent");
-        const emailInput = document.getElementById("email");
-        const passwordInput = document.getElementById("password");
-
-        // remove required attributes to avoid validation errors
-        emailInput.removeAttribute("required");
-        passwordInput.removeAttribute("required");
-        // hide the create account
-        accountEl.classList.add("hidden");
-        // show the pricing content
-        mainEl.classList.remove("hidden");
-
-        // if they aren't logged in and the flag is on, show the login button
-        if (!cognitoUser && enableLogin) {
-          showOrHideLoginButton(true);
-        } else {
-          showOrHideLoginButton(false);
-        }
-        // if they are logged in, show the reset button
-        if (cognitoUser) {
-          showOrHideResetButton(true);
-        } else {
-          showOrHideResetButton(false);
-        }
-      }
-      function showLoginState() {
-        const accountEl = document.getElementById("createAccountSection");
-        const mainEl = document.getElementById("mainContent");
-        const emailInput = document.getElementById("email");
-        const passwordInput = document.getElementById("password");
-
-        // reset the fields to required
-        emailInput.setAttribute("required", true);
-        passwordInput.setAttribute("required", true);
-        // show the create account
-        accountEl.classList.remove("hidden");
-        // hide the pricing content
-        mainEl.classList.add("hidden");
-        // hide the reset button
-        showOrHideResetButton(false);
-      }
-
-      function showOrHideResetButton(val) {
-        const resetEl = document.getElementById("resetButton");
-
-        if (val) {
-          resetEl.classList.remove("hidden");
-        } else {
-          resetEl.classList.add("hidden");
-        }
-      }
-
-      function showOrHideLoginButton(val) {
-        const loginEl = document.getElementById("loginButton");
-        const resetEl = document.getElementById("resetButton");
-
-        if (val) {
-          loginEl.classList.remove("hidden");
-          resetEl.classList.add("hidden");
-        } else {
-          loginEl.classList.add("hidden");
-          resetEl.classList.remove("hidden");
-        }
-      }
-
-      function updatePricing(pricing) {
-        const starterPricing = document.getElementById("starterPricing");
-        const companyPricing = document.getElementById("companyPricing");
-        const enterprisePricing = document.getElementById("enterprisePricing");
-
-        if (pricing.starter) starterPricing.innerHTML = pricing.starter;
-        if (pricing.company) companyPricing.innerHTML = pricing.company;
-        if (pricing.enterprise)
-          enterprisePricing.innerHTML = pricing.enterprise;
-      }
-
       // LAUNCHDARKLY CODE GOES HERE
       // initialize the client
       const ldClient = LDClient.initialize("64d5441470442b1368e8c800", {
         kind: "user",
         key: "anonymous",
       });
-      let enableLogin = false;
+
       ldClient.on("ready", async () => {
         // show the login button?
-        enableLogin = await ldClient.variation("show-login-button", false);
-        if (enableLogin) {
-          showOrHideLoginButton(enableLogin);
-        }
-        ldClient.on("change:show-login-button", showOrHideLoginButton);
+        const enableLogin = await ldClient.variation(
+          "show-login-button",
+          false
+        );
+        setLoginEnabled(enableLogin);
+        ldClient.on("change:show-login-button", setLoginEnabled);
 
         const planPricing = await ldClient.variation("plan-pricing", false);
         updatePricing(planPricing);
