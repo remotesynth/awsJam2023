@@ -1,0 +1,409 @@
+<html>
+  <head>
+    <title>LaunchDarkly AWS Jam 2023</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body>
+    <section id="mainContent" class="bg-white">
+      <div class="py-8 px-4 mx-auto max-w-screen-xl lg:py-16 lg:px-6">
+        <div id="loginButton" class="text-right hidden">
+          <a
+            id="loginBtn"
+            onclick="showLoginState()"
+            href="#"
+            class="m-4 text-white bg-blue-600 hover:bg-blue-700 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
+            >Sign in</a
+          >
+        </div>
+        <div id="resetButton" class="text-right hidden">
+          <a
+            id="resetBtn"
+            onclick="deleteExistingUser()"
+            href="#"
+            class="m-4 text-white bg-blue-600 hover:bg-blue-700 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
+            >Reset User</a
+          >
+        </div>
+        <div class="mx-auto max-w-screen-md text-center mb-8 lg:mb-12">
+          <h2 class="mb-4 text-4xl tracking-tight font-extrabold text-gray-900">
+            We've got plans for everyone
+          </h2>
+          <p class="mb-5 font-light text-gray-500 sm:text-xl">
+            We have solutions to your problems. No problems? We've got a
+            solution for that too.
+          </p>
+        </div>
+        <div
+          class="space-y-8 lg:grid lg:grid-cols-3 sm:gap-6 xl:gap-10 lg:space-y-0"
+        >
+          <!-- Pricing Card -->
+          <div
+            class="flex flex-col p-6 mx-auto max-w-lg text-center text-gray-900 bg-white rounded-lg border border-gray-100 shadow"
+          >
+            <h3 class="mb-4 text-2xl font-semibold">Starter</h3>
+            <p class="font-light text-gray-500 sm:text-lg">
+              When you aren't sure what we do but figure it's cheap enough not
+              to care.
+            </p>
+            <div class="flex justify-center items-baseline my-8">
+              <span class="mr-2 text-5xl font-extrabold"
+                >$<span id="starterPricing">9</span></span
+              >
+              <span class="text-gray-500">/month</span>
+            </div>
+            <a
+              href="#"
+              class="text-white bg-blue-600 hover:bg-blue-700 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
+              >Get started</a
+            >
+          </div>
+          <!-- Pricing Card -->
+          <div
+            class="flex flex-col p-6 mx-auto max-w-lg text-center text-gray-900 bg-white rounded-lg border border-gray-100 shadow xl:p-8"
+          >
+            <h3 class="mb-4 text-2xl font-semibold">Company</h3>
+            <p class="font-light text-gray-500 sm:text-lg">
+              When you have a team of developers and want to see if they follow
+              directions.
+            </p>
+            <div class="flex justify-center items-baseline my-8">
+              <span class="mr-2 text-5xl font-extrabold"
+                >$<span id="companyPricing">50</span></span
+              >
+              <span class="text-gray-500">/month</span>
+            </div>
+            <a
+              href="#"
+              class="text-white bg-blue-600 hover:bg-blue-700 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
+              >Get started</a
+            >
+          </div>
+          <!-- Pricing Card -->
+          <div
+            class="flex flex-col p-6 mx-auto max-w-lg text-center text-gray-900 bg-white rounded-lg border border-gray-100 shadow xl:p-8"
+          >
+            <h3 class="mb-4 text-2xl font-semibold">Enterprise</h3>
+            <p class="font-light text-gray-500 sm:text-lg">
+              Your budget is big enough that you might never notice you're
+              paying us.
+            </p>
+            <div class="flex justify-center items-baseline my-8">
+              <span class="mr-2 text-5xl font-extrabold"
+                >$<span id="enterprisePricing">499</span></span
+              >
+              <span class="text-gray-500">/month</span>
+            </div>
+            <a
+              href="#"
+              class="text-white bg-blue-600 hover:bg-blue-700 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
+              >Get started</a
+            >
+          </div>
+        </div>
+      </div>
+    </section>
+    <section id="createAccountSection" class="bg-gray-50 hidden">
+      <div
+        class="flex flex-col items-center justify-center px-6 py-8 mx-auto md:h-screen lg:py-0"
+      >
+        <div
+          class="w-full bg-white rounded-lg shadow md:mt-0 sm:max-w-md xl:p-0"
+        >
+          <div class="p-6 space-y-4 md:space-y-6 sm:p-8">
+            <h1
+              class="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl"
+            >
+              Create your account
+            </h1>
+            <form id="accountForm" class="space-y-4 md:space-y-6" action="#">
+              <div>
+                <label
+                  for="email"
+                  class="block mb-2 text-sm font-medium text-gray-900"
+                  >Your email</label
+                >
+                <input
+                  required
+                  type="email"
+                  name="email"
+                  id="email"
+                  class="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg block w-full p-2.5"
+                  placeholder="name@company.com"
+                  required=""
+                />
+              </div>
+              <div>
+                <label
+                  for="password"
+                  class="block mb-2 text-sm font-medium text-gray-900"
+                  >Password</label
+                >
+                <input
+                  required
+                  type="password"
+                  name="password"
+                  id="password"
+                  placeholder="••••••••"
+                  class="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg block w-full p-2.5"
+                  required=""
+                />
+              </div>
+              <div>
+                <label for="dev_type" class="sr-only">Account type</label>
+                <select
+                  name="dev_type"
+                  id="dev_type"
+                  class="block py-2.5 px-0 w-full text-sm text-gray-500 bg-transparent border-0 border-b-2 border-gray-200 appearance-none dark:text-gray-400 dark:border-gray-700 peer"
+                >
+                  <option selected>You are a...</option>
+                  <option value="hobbyist">Hobbyist Developer</option>
+                  <option value="professional">Professional Developer</option>
+                </select>
+              </div>
+              <button
+                type="submit"
+                class="w-full text-white bg-blue-600 hover:bg-blue-700 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
+              >
+                Create Account
+              </button>
+              <div>
+                <a
+                  href="#"
+                  onclick="showDefaultState()"
+                  class="block w-full text-white bg-slate-200 hover:bg-slate-400 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
+                >
+                  Cancel
+                </a>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+    <script src="amazon-cognito-identity.min.js"></script>
+    <script
+      crossorigin="anonymous"
+      src="https://unpkg.com/launchdarkly-js-client-sdk@latest"
+    ></script>
+
+    <script>
+      // PLACE YOUR USERPOOLID AND CLIENTID HERE
+      const poolData = {
+        UserPoolId: "us-west-1_rdEQKAPba",
+        ClientId: "2fbn2u0at4mmptsd7gdiec8833",
+      };
+      const userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
+      let cognitoUser;
+
+      // handle the form
+      const accountForm = document.getElementById("accountForm");
+      accountForm.onsubmit = async function (event) {
+        event.preventDefault();
+        const email = document.getElementById("email").value;
+        const password = document.getElementById("password").value;
+        const dev_type = document.getElementById("dev_type").value;
+        console.log(dev_type);
+        if (dev_type === "You are a...") {
+          alert("Please choose a developer type");
+          return;
+        }
+        await registerNewUser(email, password, dev_type);
+      };
+
+      async function registerNewUser(username, password, dev_type) {
+        let attributeList = [];
+        const dataDevType = {
+          Name: "custom:dev_type",
+          Value: dev_type,
+        };
+        const attributeDevType = new AmazonCognitoIdentity.CognitoUserAttribute(
+          dataDevType
+        );
+        attributeList.push(attributeDevType);
+        await userPool.signUp(
+          username,
+          password,
+          attributeList,
+          null,
+          function (err, result) {
+            if (err) {
+              alert(err.message || JSON.stringify(err));
+              return;
+            }
+            let user = result.user;
+            result.user.authenticateUser(
+              new AmazonCognitoIdentity.AuthenticationDetails({
+                Username: email,
+                Password: password,
+              }),
+              {
+                onSuccess: function (result) {
+                  handleUserResponse(user);
+                  /* console.log(
+                    "access token + " + result.getAccessToken().getJwtToken()
+                  );
+                  console.log(
+                    "id token + " + result.getIdToken().getJwtToken()
+                  );
+                  console.log(
+                    "refresh token + " + result.getRefreshToken().getToken()
+                  ); */
+                },
+
+                onFailure: function (err) {
+                  alert(err.message || JSON.stringify(err));
+                },
+              }
+            );
+          }
+        );
+      }
+
+      async function deleteExistingUser() {
+        if (cognitoUser) {
+          cognitoUser.deleteUser(async function (err, result) {
+            if (err) {
+              alert(err.message || JSON.stringify(err));
+              return;
+            }
+            console.log("user deleted");
+            cognitoUser = null;
+            // reset the user in LaunchDarkly
+            if (ldClient)
+              await ldClient.identify({ type: "user", key: "anonymous" });
+            // return to the initial state
+            showDefaultState();
+          });
+        }
+      }
+
+      function handleUserResponse(user) {
+        console.log("user created");
+        // document.cookie = `cognitoUser=${JSON.stringify(user)}`;
+        cognitoUser = user;
+        cognitoUser.getUserAttributes(async function (err, result) {
+          let ldUser = {
+            kind: "user",
+            key: "",
+            dev_type: "",
+          };
+          if (err) {
+            alert(err.message || JSON.stringify(err));
+            return;
+          }
+          for (i = 0; i < result.length; i++) {
+            if (result[i].getName() == "email") {
+              ldUser.key = result[i].getValue();
+            }
+            if (result[i].getName() == "custom:dev_type") {
+              ldUser.dev_type = result[i].getValue();
+            }
+          }
+          if (ldClient && ldUser.key.length > 0) {
+            await ldClient.identify(ldUser);
+          }
+        });
+        // hide the account form and login button
+        showDefaultState();
+      }
+
+      function showDefaultState() {
+        const accountEl = document.getElementById("createAccountSection");
+        const mainEl = document.getElementById("mainContent");
+        const emailInput = document.getElementById("email");
+        const passwordInput = document.getElementById("password");
+
+        // remove required attributes to avoid validation errors
+        emailInput.removeAttribute("required");
+        passwordInput.removeAttribute("required");
+        // hide the create account
+        accountEl.classList.add("hidden");
+        // show the pricing content
+        mainEl.classList.remove("hidden");
+
+        // if they aren't logged in and the flag is on, show the login button
+        if (!cognitoUser && enableLogin) {
+          showOrHideLoginButton(true);
+        } else {
+          showOrHideLoginButton(false);
+        }
+        // if they are logged in, show the reset button
+        if (cognitoUser) {
+          showOrHideResetButton(true);
+        } else {
+          showOrHideResetButton(false);
+        }
+      }
+      function showLoginState() {
+        const accountEl = document.getElementById("createAccountSection");
+        const mainEl = document.getElementById("mainContent");
+        const emailInput = document.getElementById("email");
+        const passwordInput = document.getElementById("password");
+
+        // reset the fields to required
+        emailInput.setAttribute("required", true);
+        passwordInput.setAttribute("required", true);
+        // show the create account
+        accountEl.classList.remove("hidden");
+        // hide the pricing content
+        mainEl.classList.add("hidden");
+        // hide the reset button
+        showOrHideResetButton(false);
+      }
+
+      function showOrHideResetButton(val) {
+        const resetEl = document.getElementById("resetButton");
+
+        if (val) {
+          resetEl.classList.remove("hidden");
+        } else {
+          resetEl.classList.add("hidden");
+        }
+      }
+
+      function showOrHideLoginButton(val) {
+        const loginEl = document.getElementById("loginButton");
+        const resetEl = document.getElementById("resetButton");
+
+        if (val) {
+          loginEl.classList.remove("hidden");
+          resetEl.classList.add("hidden");
+        } else {
+          loginEl.classList.add("hidden");
+          resetEl.classList.remove("hidden");
+        }
+      }
+
+      function updatePricing(pricing) {
+        const starterPricing = document.getElementById("starterPricing");
+        const companyPricing = document.getElementById("companyPricing");
+        const enterprisePricing = document.getElementById("enterprisePricing");
+
+        if (pricing.starter) starterPricing.innerHTML = pricing.starter;
+        if (pricing.company) companyPricing.innerHTML = pricing.company;
+        if (pricing.enterprise)
+          enterprisePricing.innerHTML = pricing.enterprise;
+      }
+
+      // LAUNCHDARKLY CODE GOES HERE
+      // initialize the client
+      const ldClient = LDClient.initialize("64d5441470442b1368e8c800", {
+        kind: "user",
+        key: "anonymous",
+      });
+      let enableLogin = false;
+      ldClient.on("ready", async () => {
+        // show the login button?
+        enableLogin = await ldClient.variation("show-login-button", false);
+        if (enableLogin) {
+          showOrHideLoginButton(enableLogin);
+        }
+        ldClient.on("change:show-login-button", showOrHideLoginButton);
+
+        const planPricing = await ldClient.variation("plan-pricing", false);
+        updatePricing(planPricing);
+        ldClient.on("change:plan-pricing", updatePricing);
+      });
+    </script>
+  </body>
+</html>

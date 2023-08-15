@@ -1,0 +1,63 @@
+---
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "AWS CloudFormation Template to run the LaunchDarkly Jam Workshop 2023"
+
+Resources:
+  LDJamBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: ldjambucket
+      WebsiteConfiguration:
+        IndexDocument: index.html
+        ErrorDocument: error.html
+  LDJamUserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: LDJamUserPool
+      AccountRecoverySetting: 
+          RecoveryMechanisms: 
+            - Name: verified_email
+              Priority: 1
+      AdminCreateUserConfig: 
+          AllowAdminCreateUserOnly: false
+      EmailConfiguration: 
+        EmailSendingAccount: COGNITO_DEFAULT
+      MfaConfiguration: "OFF"
+      UsernameAttributes: 
+        - email
+      Policies:
+          PasswordPolicy: 
+            MinimumLength: 6
+            RequireLowercase: false
+            RequireNumbers: false
+            RequireSymbols: false
+            RequireUppercase: false
+      Schema:
+        - AttributeDataType: String
+          Mutable: true
+          Name: dev_type
+          Required: false
+  LDJamUserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      ClientName: LDJamUserPool-Client
+      AllowedOAuthFlows: 
+        - code
+        - implicit
+      AllowedOAuthFlowsUserPoolClient: true
+      AllowedOAuthScopes:
+        - openid
+        - email
+      CallbackURLs: 
+        - !Join ["", ['https://', !GetAtt "LDJamBucket.DomainName"]]
+      DefaultRedirectURI: !Join ["", ['https://', !GetAtt "LDJamBucket.DomainName"]]
+      LogoutURLs: 
+        - !Join ["", ['https://', !GetAtt "LDJamBucket.DomainName"]]
+      SupportedIdentityProviders: 
+        - COGNITO
+      UserPoolId: !Ref LDJamUserPool
+  LDJamUserPoolDomain:
+    Type: AWS::Cognito::UserPoolDomain
+    Properties:
+      Domain: !Select [2, !Split ['/', !Ref AWS::StackId]]
+      UserPoolId: !Ref LDJamUserPool
