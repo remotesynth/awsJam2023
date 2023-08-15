@@ -122,3 +122,23 @@ accountForm.onsubmit = async function (event) {
   }
   await registerNewUser(email, password, dev_type);
 };
+
+// this is a helper function to simplify the steps for the Jam challenge
+function convertCognitoUserToLaunchDarkly(user) {
+  // this is the structure we need
+  let ldUser = {
+    kind: "user",
+    key: "",
+    dev_type: "",
+  };
+
+  for (i = 0; i < user.length; i++) {
+    if (user[i].getName() == "email") {
+      ldUser.key = user[i].getValue();
+    }
+    if (user[i].getName() == "custom:dev_type") {
+      ldUser.dev_type = user[i].getValue();
+    }
+  }
+  return ldUser;
+}

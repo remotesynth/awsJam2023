@@ -271,23 +271,14 @@
         // document.cookie = `cognitoUser=${JSON.stringify(user)}`;
         cognitoUser = user;
         cognitoUser.getUserAttributes(async function (err, result) {
-          let ldUser = {
-            kind: "user",
-            key: "",
-            dev_type: "",
-          };
           if (err) {
             alert(err.message || JSON.stringify(err));
             return;
           }
-          for (i = 0; i < result.length; i++) {
-            if (result[i].getName() == "email") {
-              ldUser.key = result[i].getValue();
-            }
-            if (result[i].getName() == "custom:dev_type") {
-              ldUser.dev_type = result[i].getValue();
-            }
-          }
+
+          // convert the cognito data to a user structure
+          let ldUser = convertCognitoUserToLaunchDarkly(result);
+          // if launchdarkly is defined and the returned LaunchDarkly user is valid
           if (ldClient && ldUser.key.length > 0) {
             await ldClient.identify(ldUser);
           }
