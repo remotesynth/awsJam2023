@@ -17,11 +17,7 @@ const ldClient = LDClient.initialize("LAUNCHDARKLY_CLIENT_ID", anonymousUser);
 
 // WAIT FOR THE READY EVENT AND THEN GET THE VARIATION
 ldClient.on("ready", () => {
-  // show the login button?
-  const enableLogin = ldClient.variation("show-login-button", false);
-  setLoginEnabled(enableLogin);
-  ldClient.on("change:show-login-button", setLoginEnabled);
-
+  // GET THE PLAN PRICING FROM LAUNCHDARKLY
   const planPricing = ldClient.variation("plan-pricing", {
     enterprise: "TBD",
     starter: "TBD",

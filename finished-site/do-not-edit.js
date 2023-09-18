@@ -85,19 +85,19 @@ function updatePricing(pricing) {
 
   if (pricing.starter) {
     starterCard.classList.remove("hidden");
-    starterPricing.innerHTML = pricing.starter;
+    starterPricing.innerHTML = atob(pricing.starter);
   } else {
     starterCard.classList.add("hidden");
   }
   if (pricing.company) {
     companyCard.classList.remove("hidden");
-    companyPricing.innerHTML = pricing.company;
+    companyPricing.innerHTML = atob(pricing.company);
   } else {
     companyCard.classList.add("hidden");
   }
   if (pricing.enterprise) {
     enterpriseCard.classList.remove("hidden");
-    enterprisePricing.innerHTML = pricing.enterprise;
+    enterprisePricing.innerHTML = atob(pricing.enterprise);
   } else {
     enterpriseCard.classList.add("hidden");
   }
@@ -122,3 +122,6 @@ accountForm.onsubmit = async function (event) {
   }
   await registerNewUser(email, password, dev_type);
 };
+
+// we're no longer controlling the login button via a flag so just default it to display
+setLoginEnabled(true);
