@@ -1,0 +1,53 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "lambda:*",
+        "s3:GetObject",
+        "s3:GetBucketLocation",
+        "s3:ListBucket",
+        "iam:GetUserPolicy",
+        "iam:ListGroupsForUser",
+        "iam:ListAttachedUserPolicies",
+        "iam:ListUserPolicies",
+        "iam:GetUser",
+        "iam:GetGroupPolicy",
+        "iam:GetPolicyVersion",
+        "iam:GetPolicy",
+        "iam:ListAttachedGroupPolicies",
+        "iam:ListGroupPolicies",
+        "iam:ListPolicyVersions",
+        "iam:ListPolicies",
+        "iam:ListUsers",
+        "cloud9:*",
+        "ec2:DescribeVpcs",
+        "ec2:DescribeSubnets",
+        "ec2:DescribeInstanceTypeOfferings",
+        "ec2:DescribeRouteTables"
+      ],
+      "Resource": "*",
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestedRegion": ["us-east-1", "us-west-2", "eu-west-1"]
+        }
+      }
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "iam:AttachRolePolicy",
+        "iam:CreateRole",
+        "iam:PutRolePolicy",
+        "iam:PassRole",
+        "iam:CreatePolicy",
+        "iam:ListRoles",
+        "iam:CreateServiceLinkedRole",
+        "sts:AssumeRole",
+        "iam:UpdateAssumeRolePolicy"
+      ],
+      "Resource": "*"
+    }
+  ]
+}

@@ -2,16 +2,179 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Description: "AWS CloudFormation Template to run the LaunchDarkly Jam Workshop 2023"
 
+Parameters:
+  LDFunctionName:
+    Type: String
+    Description: Name of Lambda function to be created for Launch Darkly sample website code to copy to S3 bucket
+    Default: codecommitToS3WebDeploy
+
 Resources:
+  S3DeployLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          -
+            Effect: "Allow"
+            Principal: 
+              Service: 
+                - "lambda.amazonaws.com"
+                - "codecommit.amazonaws.com"
+            Action: 
+              - "sts:AssumeRole"
+      ManagedPolicyArns:
+           - "arn:aws:iam::aws:policy/AmazonS3FullAccess"
+           - "arn:aws:iam::aws:policy/AWSCodeCommitReadOnly"
+           - "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+  
+  S3DeployWebsite:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket:
+          !Sub aws-jam-challenge-resources-${AWS::Region}
+        S3Key:
+          launchdarkly-aws-personalize/WebsiteDeploy.zip
+      Description: A simple function to upload website code to application S3 bucket based on codecommit triggers
+      FunctionName: !Ref LDFunctionName
+      PackageType: Zip
+      Handler: lambda_s3deploy.lambda_handler
+      Runtime: python3.10
+      Role: !GetAtt "S3DeployLambdaRole.Arn"
+      Timeout: 30
+      Environment:
+        Variables:
+          branch: "main"
+          s3BucketName: !Ref LDJamBucket
+          repository: !GetAtt WebsiteCodeRepo.Name
+          codecommitRegion: !Ref AWS::Region
+
+  S3DeployPermissionRole:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      FunctionName: !GetAtt S3DeployWebsite.Arn
+      Action: 'lambda:InvokeFunction'
+      Principal: 'codecommit.amazonaws.com'    
+                
+  AutoConfirmUserLambdaRole:
+      Type: AWS::IAM::Role
+      Properties: 
+        AssumeRolePolicyDocument: 
+          Version: "2012-10-17"
+          Statement: 
+            - 
+              Effect: "Allow"
+              Principal: 
+                Service: 
+                  - "lambda.amazonaws.com"
+              Action: 
+                - "sts:AssumeRole"
+
+  WebsiteCodeRepo:
+    Type: AWS::CodeCommit::Repository
+    Properties:
+      RepositoryName: websiteCodeRepo
+      Code:
+        BranchName: main
+        S3:
+          Bucket: !Sub aws-jam-challenge-resources-${AWS::Region}
+          Key: launchdarkly-aws-personalize/WebSite.zip
+      Triggers:
+        - Events:
+            - "all"
+          DestinationArn: !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${LDFunctionName}"
+          Name: "LDS3DeployTrigger"
+          Branches:
+            - "main"
+
+  AutoConfirmUser:
+    Type: AWS::Lambda::Function
+    Properties: 
+      Code:
+        S3Bucket:
+          !Sub aws-jam-challenge-resources-${AWS::Region}
+        S3Key:
+          launchdarkly-aws-personalize/autoConfirmUser.zip
+      Description: A simple function avoid the email confirmation requirement
+      FunctionName: autoConfirmUser
+      PackageType: Zip
+      Handler: index.handler
+      Runtime: nodejs16.x
+      Role: !GetAtt "AutoConfirmUserLambdaRole.Arn"
+
   LDJamBucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: ldjambucket
+      BucketName: !Sub "ldjam-${AWS::AccountId}"
       WebsiteConfiguration:
         IndexDocument: index.html
         ErrorDocument: error.html
+    DeletionPolicy: Delete
+  
+  LDJamBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref LDJamBucket
+      PolicyDocument:
+        Statement:
+          -
+            Action:
+              - "s3:GetObject"
+            Effect: "Allow"
+            Resource: !Sub "${LDJamBucket.Arn}/*"
+            Principal:
+              Service: "cloudfront.amazonaws.com"
+            Condition:
+              StringEquals:
+                'AWS:SourceArn': !Sub "arn:aws:cloudfront::${AWS::AccountId}:distribution/${LDJamCloudFront}"
+
+  LDJamCloudFrontOriginAccessControl:
+    Type: AWS::CloudFront::OriginAccessControl
+    Properties:
+         OriginAccessControlConfig:
+              Name: "ldjam"
+              SigningProtocol: sigv4
+              SigningBehavior: always
+              OriginAccessControlOriginType: s3
+  
+  LDJamCloudFront: 
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Comment: "LD Sample Website"
+        DefaultCacheBehavior:
+          AllowedMethods:
+            - HEAD
+            - DELETE
+            - POST
+            - GET
+            - OPTIONS
+            - PUT
+            - PATCH
+          CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6
+          Compress: true
+          TargetOriginId: !Sub S3-${LDJamBucket}
+          ViewerProtocolPolicy: allow-all
+        DefaultRootObject: 'index.html'
+        Enabled: true
+        HttpVersion: http2
+        PriceClass: 'PriceClass_100'
+        CustomErrorResponses:
+          - ErrorCachingMinTTL: 300
+            ErrorCode: 403
+            ResponseCode: 200
+            ResponsePagePath: '/index.html'
+        Origins:
+          - DomainName: !GetAtt LDJamBucket.RegionalDomainName
+            Id: !Sub S3-${LDJamBucket}
+            S3OriginConfig:
+              OriginAccessIdentity: ''
+            OriginAccessControlId: !GetAtt LDJamCloudFrontOriginAccessControl.Id
+
   LDJamUserPool:
     Type: AWS::Cognito::UserPool
+    DeletionPolicy: Delete
     Properties:
       UserPoolName: LDJamUserPool
       AccountRecoverySetting: 
@@ -37,6 +200,7 @@ Resources:
           Mutable: true
           Name: dev_type
           Required: false
+
   LDJamUserPoolClient:
     Type: AWS::Cognito::UserPoolClient
     Properties:
@@ -56,8 +220,20 @@ Resources:
       SupportedIdentityProviders: 
         - COGNITO
       UserPoolId: !Ref LDJamUserPool
+
   LDJamUserPoolDomain:
     Type: AWS::Cognito::UserPoolDomain
     Properties:
-      Domain: !Select [2, !Split ['/', !Ref AWS::StackId]]
+      Domain: !Select [2, !Split ['/', !Ref "AWS::StackId"]]
       UserPoolId: !Ref LDJamUserPool
+
+Outputs:
+  LDJamWebsiteURL:
+    Description: Website Cloudfront url of LaunchDarkly website
+    Value: !Sub 'https://${LDJamCloudFront.DomainName}'
+  CognitoUserPoolId:
+    Value: !Ref LDJamUserPool
+    Description: Cognito User Pool ID
+  CognitoUserPoolClientId:
+    Value: !Ref LDJamUserPoolClient
+    Description: Cognito User Pool Client ID
