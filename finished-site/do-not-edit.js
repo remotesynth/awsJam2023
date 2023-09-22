@@ -1,4 +1,6 @@
 // This file contains functions that are used to modify the site content and should not be edited.
+let cognitoUser;
+showDefaultState();
 
 // show the pricing information state
 function showDefaultState() {
@@ -16,7 +18,7 @@ function showDefaultState() {
   mainEl.classList.remove("hidden");
 
   // if they aren't logged in and the flag is on, show the login button
-  if (!cognitoUser && loginEnabled) {
+  if (!cognitoUser) {
     showOrHideLoginButton(true);
   } else {
     showOrHideLoginButton(false);
@@ -57,9 +59,7 @@ function showOrHideResetButton(val) {
   }
 }
 
-let loginEnabled = false;
 function setLoginEnabled(val) {
-  loginEnabled = val;
   showOrHideLoginButton(val);
 }
 
@@ -123,5 +123,24 @@ accountForm.onsubmit = async function (event) {
   await registerNewUser(email, password, dev_type);
 };
 
-// we're no longer controlling the login button via a flag so just default it to display
-setLoginEnabled(true);
+// this is a helper function to simplify the steps for the Jam challenge
+function convertCognitoUserToLaunchDarkly(user) {
+  // this is the structure we need
+  let ldUser = {
+    kind: "user",
+    key: "",
+    dev_type: "",
+  };
+
+  for (i = 0; i < user.length; i++) {
+    if (user[i].getName() == "email") {
+      ldUser.key = user[i].getValue();
+    }
+    if (user[i].getName() == "custom:dev_type") {
+      ldUser.dev_type = user[i].getValue();
+    }
+  }
+  return ldUser;
+}
+
+showDefaultState();

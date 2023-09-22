@@ -1,33 +1,34 @@
 // PLACE YOUR LAUNCHDARKLY CLIENT SIDE ID HERE
-const LAUNCHDARKLY_CLIENT_ID = "YOUR_CLIENT_ID";
+const LAUNCHDARKLY_CLIENT_ID = "64d5441470442b1368e8c800";
 // PLACE YOUR USERPOOLID AND CLIENTID HERE
 const POOL_DATA = {
-  UserPoolId: "us-west-1_rdEQKAPba",
-  ClientId: "2fbn2u0at4mmptsd7gdiec8833",
+  UserPoolId: "us-west-2_HwyREvjAv",
+  ClientId: "6mc3bd1g86bfneack1agbhina6",
 };
 
 // LAUNCHDARKLY CODE GOES HERE
 
-// INITIALIZE THE CLIENT
-const ldClient = LDClient.initialize("LAUNCHDARKLY_CLIENT_ID", {
+// INITIALIZE THE CLIENT WITH AN ANONYMOUS USER CONTEXT
+const anonymousUser = {
   kind: "user",
   key: "anonymous",
-});
+};
+const ldClient = LDClient.initialize(LAUNCHDARKLY_CLIENT_ID, anonymousUser);
 
 // WAIT FOR THE READY EVENT AND THEN GET THE VARIATION
 ldClient.on("ready", () => {
-  // show the login button?
-  const enableLogin = ldClient.variation("show-login-button", false);
-  setLoginEnabled(enableLogin);
-  ldClient.on("change:show-login-button", setLoginEnabled);
-
-  const planPricing = ldClient.variation("plan-pricing", false);
+  // GET THE PLAN PRICING FROM LAUNCHDARKLY
+  const planPricing = ldClient.variation("plan-pricing", {
+    enterprise: "TBD",
+    starter: "TBD",
+  });
   updatePricing(planPricing);
+
+  // update when the flag is changed
   ldClient.on("change:plan-pricing", updatePricing);
 });
 
 const userPool = new AmazonCognitoIdentity.CognitoUserPool(POOL_DATA);
-let cognitoUser;
 
 async function registerNewUser(username, password, dev_type) {
   let attributeList = [];
@@ -88,7 +89,6 @@ async function deleteExistingUser() {
 
 function handleUserResponse(user) {
   console.log("user created");
-  // document.cookie = `cognitoUser=${JSON.stringify(user)}`;
   cognitoUser = user;
   cognitoUser.getUserAttributes(async function (err, result) {
     if (err) {
@@ -105,4 +105,24 @@ function handleUserResponse(user) {
   });
   // hide the account form and login button
   showDefaultState();
+}
+
+// this is a helper function to simplify the steps for the Jam challenge
+function convertCognitoUserToLaunchDarkly(user) {
+  // this is the structure we need
+  let ldUser = {
+    kind: "user",
+    key: "",
+    dev_type: "",
+  };
+
+  for (i = 0; i < user.length; i++) {
+    if (user[i].getName() == "email") {
+      ldUser.key = user[i].getValue();
+    }
+    if (user[i].getName() == "custom:dev_type") {
+      ldUser.dev_type = user[i].getValue();
+    }
+  }
+  return ldUser;
 }

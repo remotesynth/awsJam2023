@@ -1,6 +1,6 @@
-// PLACE YOUR LAUNCHDARKLY CLIENT SIDE ID HERE
+// TODO STEP 1: PLACE YOUR LAUNCHDARKLY CLIENT SIDE ID HERE
 const LAUNCHDARKLY_CLIENT_ID = "YOUR_CLIENT_ID";
-// PLACE YOUR USERPOOLID AND CLIENTID HERE
+// TODO STEP 1: PLACE YOUR AWS COGNITO USERPOOLID AND CLIENTID HERE
 const POOL_DATA = {
   UserPoolId: "YOUR_COGNITO_USER_POOL_ID",
   ClientId: "YOUR_COGNITO_CLIENT_ID",
@@ -13,21 +13,18 @@ const anonymousUser = {
   kind: "user",
   key: "anonymous",
 };
-const ldClient = LDClient.initialize("LAUNCHDARKLY_CLIENT_ID", anonymousUser);
+// INITIALIZE LAUNCHDARKLY WITH YOUR CLIENT ID AND THE ANONYMOUS USER
+const ldClient = LDClient.initialize(LAUNCHDARKLY_CLIENT_ID, anonymousUser);
 
 // WAIT FOR THE READY EVENT AND THEN GET THE VARIATION
 ldClient.on("ready", () => {
-  // GET THE PLAN PRICING FROM LAUNCHDARKLY
-  const planPricing = ldClient.variation("plan-pricing", {
-    enterprise: "TBD",
-    starter: "TBD",
-  });
-  updatePricing(planPricing);
+  // TODO STEP 3: GET THE PLAN PRICING FROM LAUNCHDARKLY
+
+  // update when the flag is changed
   ldClient.on("change:plan-pricing", updatePricing);
 });
 
 const userPool = new AmazonCognitoIdentity.CognitoUserPool(POOL_DATA);
-let cognitoUser;
 
 async function registerNewUser(username, password, dev_type) {
   let attributeList = [];
@@ -99,7 +96,7 @@ function handleUserResponse(user) {
     let ldUser = convertCognitoUserToLaunchDarkly(result);
     // if launchdarkly is defined and the returned LaunchDarkly user is valid
     if (ldClient && ldUser.key.length > 0) {
-      await ldClient.identify(ldUser);
+      // TODO STEP 4: PASS THE USER INFORMATION TO LAUNCHDARKLY
     }
   });
   // hide the account form and login button

@@ -21,16 +21,24 @@
         "iam:ListPolicyVersions",
         "iam:ListPolicies",
         "iam:ListUsers",
-        "cloud9:*",
         "ec2:DescribeVpcs",
         "ec2:DescribeSubnets",
         "ec2:DescribeInstanceTypeOfferings",
-        "ec2:DescribeRouteTables"
+        "ec2:DescribeRouteTables",
+        "codecommit:*",
+        "cognito-sync:*",
+        "cognito-identity:*",
+        "cognito-idp:*"
       ],
       "Resource": "*",
       "Condition": {
         "StringEquals": {
-          "aws:RequestedRegion": ["us-east-1", "us-west-2", "eu-west-1"]
+          "aws:RequestedRegion": [
+            "us-east-1",
+            "us-east-2",
+            "us-west-2",
+            "eu-west-1"
+          ]
         }
       }
     },

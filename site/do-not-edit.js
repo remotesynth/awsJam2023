@@ -1,4 +1,5 @@
 // This file contains functions that are used to modify the site content and should not be edited.
+let cognitoUser;
 
 // show the pricing information state
 function showDefaultState() {
@@ -16,7 +17,7 @@ function showDefaultState() {
   mainEl.classList.remove("hidden");
 
   // if they aren't logged in and the flag is on, show the login button
-  if (!cognitoUser && loginEnabled) {
+  if (!cognitoUser) {
     showOrHideLoginButton(true);
   } else {
     showOrHideLoginButton(false);
@@ -57,9 +58,7 @@ function showOrHideResetButton(val) {
   }
 }
 
-let loginEnabled = false;
 function setLoginEnabled(val) {
-  loginEnabled = val;
   showOrHideLoginButton(val);
 }
 
@@ -85,19 +84,19 @@ function updatePricing(pricing) {
 
   if (pricing.starter) {
     starterCard.classList.remove("hidden");
-    starterPricing.innerHTML = pricing.starter;
+    starterPricing.innerHTML = atob(pricing.starter);
   } else {
     starterCard.classList.add("hidden");
   }
   if (pricing.company) {
     companyCard.classList.remove("hidden");
-    companyPricing.innerHTML = pricing.company;
+    companyPricing.innerHTML = atob(pricing.company);
   } else {
     companyCard.classList.add("hidden");
   }
   if (pricing.enterprise) {
     enterpriseCard.classList.remove("hidden");
-    enterprisePricing.innerHTML = pricing.enterprise;
+    enterprisePricing.innerHTML = atob(pricing.enterprise);
   } else {
     enterpriseCard.classList.add("hidden");
   }
@@ -142,3 +141,5 @@ function convertCognitoUserToLaunchDarkly(user) {
   }
   return ldUser;
 }
+
+showDefaultState();

@@ -1,5 +1,5 @@
-export function handler(event, context, callback) {
+exports.handler = (event, context, callback) => {
   event.response.autoConfirmUser = true;
   event.response.autoVerifyEmail = true;
   callback(null, event);
-}
+};

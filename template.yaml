@@ -100,7 +100,7 @@ Resources:
       FunctionName: autoConfirmUser
       PackageType: Zip
       Handler: index.handler
-      Runtime: nodejs16.x
+      Runtime: nodejs18.x
       Role: !GetAtt "AutoConfirmUserLambdaRole.Arn"
 
   LDJamBucket:
@@ -152,7 +152,7 @@ Resources:
             - OPTIONS
             - PUT
             - PATCH
-          CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6
+          CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad
           Compress: true
           TargetOriginId: !Sub S3-${LDJamBucket}
           ViewerProtocolPolicy: allow-all
@@ -200,6 +200,8 @@ Resources:
           Mutable: true
           Name: dev_type
           Required: false
+      LambdaConfig:
+        PreSignUp: !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:autoConfirmUser"
 
   LDJamUserPoolClient:
     Type: AWS::Cognito::UserPoolClient
@@ -227,6 +229,14 @@ Resources:
       Domain: !Select [2, !Split ['/', !Ref "AWS::StackId"]]
       UserPoolId: !Ref LDJamUserPool
 
+  LambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties: 
+      Action: "lambda:InvokeFunction"
+      FunctionName: !GetAtt "AutoConfirmUser.Arn"
+      Principal: "cognito-idp.amazonaws.com"
+      SourceArn: !GetAtt "LDJamUserPool.Arn"
+
 Outputs:
   LDJamWebsiteURL:
     Description: Website Cloudfront url of LaunchDarkly website
@@ -236,4 +246,4 @@ Outputs:
     Description: Cognito User Pool ID
   CognitoUserPoolClientId:
     Value: !Ref LDJamUserPoolClient
-    Description: Cognito User Pool Client ID
+    Description: Cognito Client ID
