@@ -14,14 +14,14 @@ const anonymousUser = {
   key: "anonymous",
 };
 // INITIALIZE LAUNCHDARKLY WITH YOUR CLIENT ID AND THE ANONYMOUS USER
-const ldClient = LDClient.initialize(LAUNCHDARKLY_CLIENT_ID, anonymousUser);
+const client = LDClient.initialize(LAUNCHDARKLY_CLIENT_ID, anonymousUser);
 
 // WAIT FOR THE READY EVENT AND THEN GET THE VARIATION
-ldClient.on("ready", () => {
+client.on("ready", () => {
   // TODO STEP 3: GET THE PLAN PRICING FROM LAUNCHDARKLY
 
   // update when the flag is changed
-  ldClient.on("change:plan-pricing", updatePricing);
+  client.on("change:plan-pricing", updatePricing);
 });
 
 const userPool = new AmazonCognitoIdentity.CognitoUserPool(POOL_DATA);
@@ -76,7 +76,7 @@ async function deleteExistingUser() {
       console.log("user deleted");
       cognitoUser = null;
       // reset the user in LaunchDarkly
-      if (ldClient) await ldClient.identify({ type: "user", key: "anonymous" });
+      if (client) await client.identify({ type: "user", key: "anonymous" });
       // return to the initial state
       showDefaultState();
     });
@@ -95,7 +95,7 @@ function handleUserResponse(user) {
     // convert the cognito data to a user structure
     let ldUser = convertCognitoUserToLaunchDarkly(result);
     // if launchdarkly is defined and the returned LaunchDarkly user is valid
-    if (ldClient && ldUser.key.length > 0) {
+    if (client && ldUser.key.length > 0) {
       // TODO STEP 4: PASS THE USER INFORMATION TO LAUNCHDARKLY
     }
   });

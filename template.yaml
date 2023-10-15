@@ -241,9 +241,9 @@ Outputs:
   LDJamWebsiteURL:
     Description: Website Cloudfront url of LaunchDarkly website
     Value: !Sub 'https://${LDJamCloudFront.DomainName}'
-  CognitoUserPoolId:
+  UserPoolId:
     Value: !Ref LDJamUserPool
     Description: Cognito User Pool ID
-  CognitoUserPoolClientId:
+  CognitoClientId:
     Value: !Ref LDJamUserPoolClient
     Description: Cognito Client ID
